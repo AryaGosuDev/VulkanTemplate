@@ -27,7 +27,5 @@ int main() {
 	vkApp_->setup("Vulkan Template App");
 	vkApp_->run();
 
-	
-
 	return 0;
 }

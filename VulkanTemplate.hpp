@@ -357,11 +357,11 @@ private:
 	void cleanup() {
 		cleanupSwapChain();
 
-		//vkDestroySampler(device, textureSampler, nullptr);
-		//vkDestroyImageView(device, textureImageView, nullptr);
+		vkDestroySampler(device, textureSampler, nullptr);
+		vkDestroyImageView(device, textureImageView, nullptr);
 
-		//vkDestroyImage(device, textureImage, nullptr);
-		//vkFreeMemory(device, textureImageMemory, nullptr);
+		vkDestroyImage(device, textureImage, nullptr);
+		vkFreeMemory(device, textureImageMemory, nullptr);
 
 		vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 
@@ -378,23 +378,19 @@ private:
 		vkDestroyBuffer(device, vertexBuffer, nullptr);
 		vkFreeMemory(device, vertexBufferMemory, nullptr);
 
-		/*
+		
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 			vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
 			vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
 			vkDestroyFence(device, inFlightFences[i], nullptr);
 		}
-		*/
-		//vkDestroySemaphore(device, renderFinishedSemaphores, nullptr);
-		//vkDestroySemaphore(device, imageAvailableSemaphores, nullptr);
-		//vkDestroyFence(device, inFlightFences, nullptr);
 
 		vkDestroyCommandPool(device, commandPool, nullptr);
 
 		vkDestroyDevice(device, nullptr);
 
 		if (enableValidationLayers) {
-			//DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+			DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
 		}
 
 		vkDestroySurfaceKHR(instance, surface, nullptr);
