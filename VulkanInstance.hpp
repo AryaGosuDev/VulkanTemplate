@@ -36,8 +36,8 @@ namespace VkApplication {
 			createInfo.enabledLayerCount = 0; createInfo.pNext = nullptr;
 		}
 		
-
-		if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
+		VkResult errcode = vkCreateInstance(&createInfo, nullptr, &instance);
+		if (errcode != VK_SUCCESS) {
 			throw std::runtime_error("failed to create instance!");
 		}
 	}

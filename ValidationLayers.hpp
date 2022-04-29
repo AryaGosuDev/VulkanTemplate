@@ -5,8 +5,6 @@
 #include <vulkan/vulkan.hpp> 
 #include <fstream>
 
-
-
 namespace VkApplication {
 
 	// Validation log file
