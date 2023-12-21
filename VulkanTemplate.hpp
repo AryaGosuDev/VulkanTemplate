@@ -15,6 +15,7 @@
 #include <array>
 #include <chrono>
 #include <unordered_map>
+#include <unordered_set>
 #include <stack>
 
 #define GLM_FORCE_RADIANS
@@ -27,6 +28,12 @@
 #include <glm/gtx/hash.hpp>
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
+#include <glm/gtx/rotate_vector.hpp>
+
+#include "imgui/imgui.h"
+#include "imgui/imconfig.h"
+#include "imgui/imgui_impl_vulkan.h"
+#include "imgui/imgui_impl_glfw.h"
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan.hpp>
@@ -49,12 +56,20 @@ constexpr bool enableValidationLayers = false;
 
 #include "ValidationLayers.hpp"
 
+static void check_vk_result(VkResult err) {
+	if (err == 0)
+		return;
+	fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
+	if (err < 0)
+		abort();
+}
+
 namespace VkApplication{
 
 	constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
 	const std::vector<const char*> deviceExtensions = {
-	VK_KHR_SWAPCHAIN_EXTENSION_NAME
+	VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME
 	};
 
 	struct QueueFamilyIndices {
@@ -87,8 +102,8 @@ struct Vertex {
 		return bindingDescription;
 	}
 
-	static std::array<VkVertexInputAttributeDescription, 4> getAttributeDescriptions() {
-		std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions = {};
+	static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions() {
+		std::vector<VkVertexInputAttributeDescription> attributeDescriptions(4);
 
 		attributeDescriptions[0].binding = 0;
 		attributeDescriptions[0].location = 0;
@@ -118,6 +133,63 @@ struct Vertex {
 	}
 };
 
+// Per-instance data block
+struct InstanceData {
+	glm::vec3 pos;
+	glm::vec3 rot;
+	uint32_t texIndex;
+	glm::vec3 instanceColor;
+
+	static VkVertexInputBindingDescription getBindingDescription() {
+		VkVertexInputBindingDescription bindingDescription = {};
+		bindingDescription.binding = 1;
+		bindingDescription.stride = sizeof(InstanceData);
+		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+
+		return bindingDescription;
+	}
+
+	static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions() {
+		std::vector<VkVertexInputAttributeDescription> attributeDescriptions(4);
+
+		attributeDescriptions[0].binding = 1;
+		attributeDescriptions[0].location = 4;
+		attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescriptions[0].offset = offsetof(InstanceData, pos);
+
+		attributeDescriptions[1].binding = 1;
+		attributeDescriptions[1].location = 5;
+		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescriptions[1].offset = offsetof(InstanceData, rot);
+
+		attributeDescriptions[2].binding = 1;
+		attributeDescriptions[2].location = 6;
+		attributeDescriptions[2].format = VK_FORMAT_R32_SINT;
+		attributeDescriptions[2].offset = offsetof(InstanceData, texIndex);
+
+		attributeDescriptions[3].binding = 1;
+		attributeDescriptions[3].location = 7;
+		attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescriptions[3].offset = offsetof(InstanceData, instanceColor);
+
+		return attributeDescriptions;
+	}
+
+	bool operator==(const InstanceData& other) const {
+		return pos == other.pos && rot == other.rot && texIndex == other.texIndex && instanceColor == other.instanceColor;
+	}
+};
+
+/*
+namespace std {
+	template<> struct hash<VkApplication::Vertex> {
+		size_t operator()(VkApplication::Vertex const& vertex) const {
+			return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1);
+		}
+	};
+}
+*/
+
 struct UniformBufferObject {
 	glm::mat4 model;
 	glm::mat4 view;
@@ -139,11 +211,22 @@ struct UniformFragmentObject {
 	glm::mat4 eyeViewMatrix;
 };
 
-struct UniformBufferObjectDynamic {
-	glm::mat4* model = nullptr;
+struct PushConstants {
+	int useReflectionSampler;
 };
 
+struct {
+	VkPipeline ground;
+	VkPipeline cube;
+	VkPipeline mirror;
+} pipelines;
+
+
 class MainVulkApplication {
+
+	friend void mainLoop(VkApplication::MainVulkApplication*);
+	friend void updateUniformBuffer(MainVulkApplication*);
+	friend void loadInitialVariables(MainVulkApplication*);
 
 protected:
 	MainVulkApplication() {}
@@ -161,9 +244,6 @@ public:
 		initVulkan(appName);
 	}
 
-	void run() {
-		mainLoop();
-	}
 
 	void cleanupApp() {
 		cleanup();
@@ -177,6 +257,8 @@ private:
 	size_t HEIGHT = 600;
 	
 	GLFWwindow* window;
+	ImGui_ImplVulkanH_Window imgui_window;
+	KeyControls keyControl;
 
 	VkInstance instance;
 	VkDebugUtilsMessengerEXT debugMessenger;
@@ -243,7 +325,6 @@ private:
 	std::vector<VkSemaphore> imageAvailableSemaphores;
 	std::vector<VkSemaphore> renderFinishedSemaphores;
 	std::vector<VkFence> inFlightFences;
-	std::vector<VkFence> imagesInFlight;
 
 	size_t currentFrame = 0;
 
@@ -292,6 +373,10 @@ private:
 	void createUniformBuffers();
 	void createDescriptorPool();
 	void createDescriptorSets();
+	
+	void createImguiContext();
+	void render_gui();
+	void drawImgFrame(VkCommandBuffer& );
 
 	void copyBuffer(VkBuffer, VkBuffer, VkDeviceSize);
 	void createCommandBuffers();
@@ -339,7 +424,8 @@ private:
 		createIndexBuffer();
 		createUniformBuffers();
 		createDescriptorPool();
-		createDescriptorSets();
+		//createDescriptorSets();
+		createImguiContext();
 		createCommandBuffers();
 		createSyncObjects();
 	}
@@ -421,6 +507,8 @@ namespace std {
 	};
 }
 
+#include "VulkanTools.hpp"
+#include "VulkanDescriptor.hpp"
 #include "VulkanInstance.hpp"
 #include "VulkanDevice.hpp"
 #include "VulkanWindow.hpp"
@@ -430,5 +518,6 @@ namespace std {
 #include "VulkanSync.hpp"
 #include "VulkanGeometry.hpp"
 #include "VulkanTexture.hpp"
+#include "VulkanImgui.hpp"
 
 #endif

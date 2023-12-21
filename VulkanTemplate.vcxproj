@@ -126,6 +126,17 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>glfw3.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep>
+      <Command>glslangValidator -V shaders/shader_base.vert -o shaders/shader_base_vert.spv
+glslangValidator -V shaders/shader_base.frag -o shaders/shader_base_frag.spv
+</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>shaders/shader_base_vert.spv;shaders/shader_base_frag.spv;%(Outputs)</Outputs>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Inputs>shaders/shader_base.vert;shaders/shader_base.frag;%(Inputs)</Inputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -161,8 +172,8 @@
     <ClInclude Include="VulkanWindow.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\09_shader_base.frag" />
-    <None Include="shaders\09_shader_base.vert" />
+    <None Include="shaders\shader_base.frag" />
+    <None Include="shaders\shader_base.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

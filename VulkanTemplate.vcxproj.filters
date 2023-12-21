@@ -58,7 +58,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\09_shader_base.frag" />
-    <None Include="shaders\09_shader_base.vert" />
+    <None Include="shaders\shader_base.frag" />
+    <None Include="shaders\shader_base.vert" />
   </ItemGroup>
 </Project>

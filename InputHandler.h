@@ -8,6 +8,9 @@
 
 bool stopAnimation = true;
 int motionMode = 0;
+bool selectMode = false;
+bool motionFlying = false;
+bool kick = false;
 double startX = 0;
 double startY = 0;
 
@@ -18,26 +21,15 @@ double pointy;
 
 bool activateTrans = false;
 
-
-float lightPositionx = 0.0;
-float lightPositionz = 0.0;
-float lightPositiony = 0.0;
+float lightPositionx = 0.0f;
+float lightPositionz = 0.0f;
+float lightPositiony = 0.0f;
 float lightPositionIncrement = 0.7f;
 char changeLightPos[3] = {};
 double theta = 0.0;
 double phi = 0.0;
-float eyex;
-float eyey;
-float eyez;
-float eyer = -5.0;
-float gazex;
-float gazey;
-float gazez = -5;
-float angle = 0;    // in degrees
-float angle2 = 0;   // in degrees 
-float angle3 = 0;   // in degrees
 
-GLfloat zdistance = 0.0;
+GLfloat zdistance = 0.0f;
 
 void readInput_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (key == GLFW_KEY_S && action == GLFW_PRESS) {
@@ -78,34 +70,50 @@ void readInput_callback(GLFWwindow* window, int key, int scancode, int action, i
 		changeLightPos[2] = 1;
 	}
 
-	else if (key == GLFW_KEY_S && action == GLFW_PRESS) {
+	else if (key == GLFW_KEY_M && action == GLFW_PRESS) {
+		motionMode++;
+		if (motionMode == 3) motionMode = 0;
 
+	}
+	else if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+		kick = true;
 	}
 }
 
 void mouse_cursor_callback(GLFWwindow* window, double xpos, double ypos) {
 	pointx = xpos;
 	pointy = ypos;
+	//std::cout << motionMode << std::endl;
 
-	if (lbutton_down) {
+	if (lbutton_down && motionMode == 0) {
 
-		phi += (xpos - startX) / 10.0;
+		phi += (xpos - startX) / 100.0 ;
 		startX = xpos;
-		theta += (ypos - startY) / 10.0;
+		theta += (ypos - startY) / 100.0 ;
 		startY = ypos;
+		//std::cout << phi << std::endl;
+	}
+	else if (lbutton_down && motionMode == 1) {
+		selectMode = true;
+	}
+	else if (motionMode == 1) {
+		selectMode = false;
 	}
 }
-
+ 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
 
-	if (button == GLFW_MOUSE_BUTTON_LEFT ) {
+	if (button == GLFW_MOUSE_BUTTON_LEFT && motionMode == 0 ) {
 		if (GLFW_PRESS == action) {
 			lbutton_down = true;
 			startX = pointx;
-			startY = pointy;	
+			startY = pointy;	 
+			motionFlying = true;
 		}
-		else if (GLFW_RELEASE == action)
+		else if (GLFW_RELEASE == action) {
 			lbutton_down = false;
+			motionFlying = false;
+		}
 	}
 }
 #endif 
