@@ -155,14 +155,23 @@ glslangValidator -V shaders/shader_base.frag -o shaders/shader_base_frag.spv
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="imgui\imgui.cpp" />
+    <ClCompile Include="imgui\imgui_demo.cpp" />
+    <ClCompile Include="imgui\imgui_draw.cpp" />
+    <ClCompile Include="imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="imgui\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="imgui\imgui_tables.cpp" />
+    <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="InputHandler.h" />
     <ClInclude Include="ValidationLayers.hpp" />
+    <ClInclude Include="VulkanDescriptor.hpp" />
     <ClInclude Include="VulkanDevice.hpp" />
     <ClInclude Include="VulkanDraw.hpp" />
     <ClInclude Include="VulkanGeometry.hpp" />
+    <ClInclude Include="VulkanImgui.hpp" />
     <ClInclude Include="VulkanInstance.hpp" />
     <ClInclude Include="VulkanRenderSettings.hpp" />
     <ClInclude Include="VulkanSwapchain.hpp" />

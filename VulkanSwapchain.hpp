@@ -115,7 +115,7 @@ namespace VkApplication {
 		createDescriptorSets();
 		createCommandBuffers();
 
-		imagesInFlight.resize(swapChainImages.size(), VK_NULL_HANDLE);
+		inFlightFences.resize(swapChainImages.size(), VK_NULL_HANDLE);
 	}
 
 	VkPresentModeKHR MainVulkApplication::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes) {

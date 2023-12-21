@@ -221,6 +221,9 @@ struct {
 	VkPipeline mirror;
 } pipelines;
 
+struct KeyControls {
+	bool kickParticle = false;
+};
 
 class MainVulkApplication {
 
@@ -318,7 +321,6 @@ private:
 
 	UniformBufferObject ubo;
 	UniformFragmentObject ufo;
-	UniformBufferObjectDynamic uboDataDynamic;
 
 	std::vector<VkCommandBuffer> commandBuffers;
 
@@ -507,7 +509,6 @@ namespace std {
 	};
 }
 
-#include "VulkanTools.hpp"
 #include "VulkanDescriptor.hpp"
 #include "VulkanInstance.hpp"
 #include "VulkanDevice.hpp"

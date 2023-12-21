@@ -72,9 +72,9 @@ namespace VkApplication {
 	void updateUniformBuffer(VkApplication::MainVulkApplication* _app) {
 		if (motionFlying == true) {
 
-			mainEyeLoc.x = 6.0f * sin(theta) * cos(phi);
-			mainEyeLoc.y = 6.0f * cos(theta);
-			mainEyeLoc.z = 6.0f * sin(theta) * sin(phi);
+			mainEyeLoc.x = 6.0f * float(sin(theta)) * float(cos(phi));
+			mainEyeLoc.y = 6.0f * float(cos(theta));
+			mainEyeLoc.z = 6.0f * float(sin(theta)) * float(sin(phi));
 			_app->ubo.view = glm::lookAt(mainEyeLoc, centerLoc, up);
 		}
 
