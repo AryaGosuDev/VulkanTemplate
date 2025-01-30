@@ -17,6 +17,11 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <stack>
+#include <thread>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
+#include <memory>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -29,6 +34,7 @@
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtx/rotate_vector.hpp>
+#include <glm/ext.hpp>
 
 #include "imgui/imgui.h"
 #include "imgui/imconfig.h"
@@ -37,6 +43,7 @@
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_core.h>
 #include <GLFW/glfw3.h>
 
 #define STB_IMAGE_IMPLEMENTATION

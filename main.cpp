@@ -96,6 +96,7 @@ namespace VkApplication {
 		}
 	}
 
+
 	void mainLoop(VkApplication::MainVulkApplication* _app) {
 
 		glfwSetKeyCallback(_app->window, readInput_callback);
@@ -107,7 +108,7 @@ namespace VkApplication {
 		while (!(WindowRes = glfwWindowShouldClose(_app->window))) {
 			glfwPollEvents();
 			updateUniformBuffer(_app);
-			
+			_app->drawFrame();
 		}
 		vkDeviceWaitIdle(_app->device);
 	}
